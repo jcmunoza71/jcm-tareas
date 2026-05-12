@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JCM — Tareas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F5F3EE;--surface:#FFFFFF;--border:#D8D4CB;
+  --text:#1A1917;--text2:#6B6760;--text3:#A8A49D;
+  --juv:#0C447C;--juv-bg:#E6F1FB;
+  --muro:#085041;--muro-bg:#E1F5EE;
+  --personal:#633806;--personal-bg:#FAEEDA;
+  --alta:#791F1F;--alta-bg:#FCEBEB;
+  --media:#633806;--media-bg:#FFF3E0;
+  --baja:#27500A;--baja-bg:#EAF3DE;
+  --accent:#1A1917;--green:#1D9E75;
+  --orange:#BA7517;--red:#E24B4A;--red-bg:#FCEBEB;
+  --radius:10px;--radius-sm:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.app{max-width:720px;margin:0 auto;padding:2rem 1.5rem 4rem;}
+
+/* Auth screen */
+#auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:1.5rem;text-align:center;}
+#auth-screen h2{font-size:22px;font-weight:700;letter-spacing:-0.02em;}
+#auth-screen p{font-size:14px;color:var(--text2);max-width:340px;line-height:1.6;}
+.btn-auth{height:48px;padding:0 28px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius-sm);font-family:'Syne',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:opacity 0.15s;display:flex;align-items:center;gap:10px;}
+.btn-auth:hover{opacity:0.85;}
+.auth-note{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);}
+
+/* Main app */
+#main-app{display:none;}
+.app-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem;}
+.app-title{font-size:13px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:4px;}
+.app-name{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-0.02em;}
+.date-str{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);margin-top:4px;}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.sync-pill{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:5px 12px;white-space:nowrap;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+.dot.syncing{background:var(--orange);animation:pulse 1s infinite;}
+.dot.error{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.btn-signout{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);background:none;border:none;cursor:pointer;text-decoration:underline;}
+.btn-signout:hover{color:var(--text);}
+
+/* Today banner */
+.today-banner{background:var(--text);color:var(--bg);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.5rem;}
+.today-banner-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;opacity:0.6;margin-bottom:10px;}
+.today-list{display:flex;flex-direction:column;gap:7px;}
+.today-item{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;}
+.today-check{width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.35);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:all 0.15s;}
+.today-check.checked{background:var(--green);border-color:var(--green);}
+.today-item-text{flex:1;line-height:1.35;}
+.today-item-text.done-text{text-decoration:line-through;opacity:0.4;}
+.today-emp{font-family:'DM Mono',monospace;font-size:9px;padding:1px 7px;border-radius:99px;background:rgba(255,255,255,0.12);white-space:nowrap;}
+.today-empty{font-size:13px;opacity:0.45;font-family:'DM Mono',monospace;}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.5rem;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
+.stat-num{font-size:28px;font-weight:700;color:var(--text);letter-spacing:-0.03em;line-height:1;margin-bottom:4px;}
+.stat-label{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);}
+
+/* Input */
+.input-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem;}
+.input-main{display:flex;gap:8px;margin-bottom:10px;}
+.input-main input{flex:1;height:42px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-size:14px;padding:0 14px;outline:none;transition:border-color 0.15s;min-width:0;}
+.input-main input:focus{border-color:var(--accent);}
+.input-main input::placeholder{color:var(--text3);}
+.input-row2{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;}
+.input-row2 select{height:36px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-size:13px;padding:0 10px;outline:none;cursor:pointer;flex:1;min-width:100px;}
+.due-wrap{display:flex;align-items:center;gap:6px;flex:1;min-width:150px;}
+.due-wrap label{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);white-space:nowrap;}
+.due-wrap input[type=date]{flex:1;height:36px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:0 10px;outline:none;}
+.due-wrap input[type=date]:focus{border-color:var(--accent);}
+.btn-add{height:42px;padding:0 20px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius-sm);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity 0.15s;white-space:nowrap;}
+.btn-add:hover{opacity:0.85;}
+.btn-review{width:100%;height:38px;background:transparent;border:1px dashed var(--border);border-radius:var(--radius-sm);font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);cursor:pointer;transition:all 0.15s;}
+.btn-review:hover{border-color:var(--accent);color:var(--text);}
+
+/* Filters */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.5rem;}
+.filter-btn{height:28px;padding:0 12px;border-radius:99px;border:1px solid var(--border);background:transparent;font-family:'Syne',sans-serif;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all 0.15s;}
+.filter-btn:hover{border-color:var(--text);color:var(--text);}
+.filter-btn.active{background:var(--text);color:var(--bg);border-color:var(--text);}
+
+/* Section labels */
+.section-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin:1.5rem 0 8px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* Tasks */
+.tasks-list{display:flex;flex-direction:column;gap:5px;}
+.task-item{display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;transition:opacity 0.2s,transform 0.15s;}
+.task-item:hover{transform:translateX(2px);}
+.task-item.done{opacity:0.4;}
+.task-item.overdue{border-color:var(--red);}
+.task-check{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all 0.15s;background:var(--bg);}
+.task-check.checked{background:var(--green);border-color:var(--green);color:white;}
+.task-body{flex:1;min-width:0;}
+.task-text{font-size:14px;font-weight:500;color:var(--text);line-height:1.45;word-break:break-word;}
+.task-text.done-text{text-decoration:line-through;}
+.task-meta{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;align-items:center;}
+.badge{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;padding:2px 8px;border-radius:99px;}
+.badge-juv{background:var(--juv-bg);color:var(--juv);}
+.badge-muro{background:var(--muro-bg);color:var(--muro);}
+.badge-personal{background:var(--personal-bg);color:var(--personal);}
+.prio-alta{background:var(--alta-bg);color:var(--alta);}
+.prio-media{background:var(--media-bg);color:var(--media);}
+.prio-baja{background:var(--baja-bg);color:var(--baja);}
+.due-badge{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;}
+.due-today{background:#FFF3E0;color:var(--orange);}
+.due-overdue{background:var(--red-bg);color:var(--red);}
+.due-future{background:var(--baja-bg);color:var(--baja);}
+.task-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);}
+.del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 2px;flex-shrink:0;line-height:1;transition:color 0.15s;}
+.del-btn:hover{color:var(--red);}
+.empty{text-align:center;padding:3rem 1rem;color:var(--text3);font-size:14px;}
+.loading{text-align:center;padding:3rem 1rem;}
+.loading-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--text3);margin:0 3px;animation:bounce 1.2s infinite;}
+.loading-dot:nth-child(2){animation-delay:0.2s;}
+.loading-dot:nth-child(3){animation-delay:0.4s;}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}}
+.btn-analyze{width:100%;margin-top:1.5rem;height:42px;background:transparent;border:1px solid var(--border);border-radius:var(--radius);font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);cursor:pointer;transition:all 0.15s;}
+.btn-analyze:hover{border-color:var(--accent);color:var(--text);}
+@media(max-width:500px){.input-main{flex-wrap:wrap;}.btn-add{width:100%;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- AUTH SCREEN -->
+  <div id="auth-screen">
+    <div>
+      <div class="app-title" style="text-align:center;margin-bottom:8px;">Juan Carlos Muñoz</div>
+      <h2>Tablero de tareas</h2>
+    </div>
+    <p>Conecta tu cuenta de Google para guardar tus tareas en Drive. Tus datos sobreviven cualquier actualización del archivo.</p>
+    <button class="btn-auth" id="btn-signin">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#fff" d="M9 3.48c1.69 0 2.83.73 3.48 1.34l2.54-2.48C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.96l2.91 2.26C4.6 5.05 6.62 3.48 9 3.48z"/><path fill="#fff" d="M17.64 9.2c0-.74-.06-1.28-.19-1.84H9v3.34h4.96c-.1.83-.64 2.08-1.84 2.92l2.84 2.2c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#fff" d="M3.88 10.78A5.54 5.54 0 0 1 3.58 9c0-.62.11-1.22.29-1.78L.96 4.96A9 9 0 0 0 0 9c0 1.45.35 2.82.96 4.04l2.92-2.26z"/><path fill="#fff" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.84-2.2c-.76.53-1.78.9-3.12.9-2.38 0-4.4-1.57-5.12-3.74L.87 13.04C2.35 15.98 5.48 18 9 18z"/></svg>
+      Conectar con Google
+    </button>
+    <span class="auth-note">Solo necesitas autorizar una vez. Tus tareas se guardan en un archivo en tu Drive.</span>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="main-app">
+    <div class="app-header">
+      <div>
+        <div class="app-title">Juan Carlos Muñoz</div>
+        <div class="app-name">Tablero de tareas</div>
+        <div class="date-str" id="today-str"></div>
+      </div>
+      <div class="header-right">
+        <div class="sync-pill"><span class="dot" id="sync-dot"></span><span id="sync-label">Sincronizado</span></div>
+        <button class="btn-signout" onclick="signOut()">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <div class="today-banner">
+      <div class="today-banner-title">⚡ Para terminar hoy</div>
+      <div id="today-container"><div class="today-empty">Sin tareas con vencimiento hoy</div></div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="s-pending">—</div><div class="stat-label">Pendientes</div></div>
+      <div class="stat"><div class="stat-num" id="s-juv">—</div><div class="stat-label">Juvenia</div></div>
+      <div class="stat"><div class="stat-num" id="s-muro">—</div><div class="stat-label">MURO</div></div>
+    </div>
+
+    <div class="input-card">
+      <div class="input-main">
+        <input type="text" id="task-input" placeholder="Describir tarea..." />
+        <button class="btn-add" onclick="addTask()">+ Agregar</button>
+      </div>
+      <div class="input-row2">
+        <select id="emp-sel"><option value="Juvenia">Juvenia</option><option value="MURO">MURO</option><option value="Personal">Personal</option></select>
+        <select id="prio-sel"><option value="Alta">Alta prioridad</option><option value="Media">Media prioridad</option><option value="Baja">Baja prioridad</option></select>
+        <div class="due-wrap"><label for="due-input">Vence:</label><input type="date" id="due-input"/></div>
+      </div>
+      <button class="btn-review" onclick="copyForClaude()">↗ Copiar pendientes para pegar en Claude</button>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active" onclick="setFilter('Todas',this)">Todas</button>
+      <button class="filter-btn" onclick="setFilter('Juvenia',this)">Juvenia</button>
+      <button class="filter-btn" onclick="setFilter('MURO',this)">MURO</button>
+      <button class="filter-btn" onclick="setFilter('Personal',this)">Personal</button>
+      <button class="filter-btn" onclick="setFilter('Alta',this)">Alta prioridad</button>
+      <button class="filter-btn" onclick="setFilter('Vencidas',this)">Vencidas</button>
+      <button class="filter-btn" onclick="setFilter('Pendientes',this)">Pendientes</button>
+      <button class="filter-btn" onclick="setFilter('Completadas',this)">Completadas</button>
+    </div>
+
+    <div id="tasks-container">
+      <div class="loading"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div>
+    </div>
+
+    <button class="btn-analyze" onclick="copyAnalysis()">↗ Copiar lista completa para análisis en Claude</button>
+  </div>
+
+</div>
+
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer onload="gapiLoaded()"></script>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+// INSTRUCCIONES: Reemplaza CLIENT_ID con tu Google OAuth Client ID.
+// Pasos: console.cloud.google.com → Nuevo proyecto → APIs → Drive API → Credenciales
+// → Crear credencial OAuth 2.0 → Aplicación web → Orígenes: file:// y http://localhost
+// Copia el Client ID aquí:
+const CLIENT_ID = '447980727079-lqcq34utcq00h5s6fuq3bnnq2n2tlb9s.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+const DATA_FILE = 'jcm_tasks_data.json';
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let tasks = [];
+let filter = 'Todas';
+let tokenClient;
+let gapiReady = false;
+let gisReady = false;
+let driveFileId = null;
+let saveTimeout = null;
+
+// ── GOOGLE AUTH ──────────────────────────────────────────────────────────────
+function gapiLoaded() {
+  gapi.load('client', async () => {
+    await gapi.client.init({
+      discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+    });
+    gapiReady = true;
+    maybeInit();
+  });
+}
+
+window.onload = () => {
+  // GIS might load before or after gapi
+  if (typeof google !== 'undefined' && google.accounts) {
+    initGIS();
+  } else {
+    document.querySelector('script[src*="gsi"]').addEventListener('load', initGIS);
+  }
+};
+
+function initGIS() {
+  if (CLIENT_ID === 'TU_CLIENT_ID_AQUI') {
+    showConfigError();
+    return;
+  }
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if (resp.error) { setSyncStatus('error'); return; }
+      showApp();
+      await loadFromDrive();
+    },
+  });
+  gisReady = true;
+  maybeInit();
+}
+
+function maybeInit() {
+  if (!gapiReady || !gisReady) return;
+  // Check if we have a stored token
+  const tok = localStorage.getItem('jcm_gtoken');
+  if (tok) {
+    gapi.client.setToken(JSON.parse(tok));
+    showApp();
+    loadFromDrive();
+  }
+}
+
+function showConfigError() {
+  document.getElementById('auth-screen').innerHTML = `
+    <div style="max-width:480px;">
+      <h2 style="margin-bottom:1rem;">Configuración requerida</h2>
+      <p style="color:var(--text2);line-height:1.7;font-size:14px;">
+        Para activar la sincronización con Google Drive, sigue estos pasos:<br><br>
+        1. Ve a <strong>console.cloud.google.com</strong><br>
+        2. Crea un proyecto nuevo<br>
+        3. Activa la <strong>Google Drive API</strong><br>
+        4. Crea credenciales <strong>OAuth 2.0</strong> → Aplicación web<br>
+        5. En "Orígenes JavaScript autorizados" agrega <strong>null</strong> (para archivo local)<br>
+        6. Copia el <strong>Client ID</strong> y reemplaza <code>447980727079-lqcq34utcq00h5s6fuq3bnnq2n2tlb9s.apps.googleusercontent.com</code> en este archivo<br><br>
+        <em>O pídele a Claude que lo configure por ti con tu Client ID.</em>
+      </p>
+    </div>`;
+}
+
+document.getElementById('btn-signin').addEventListener('click', () => {
+  if (CLIENT_ID === 'TU_CLIENT_ID_AQUI') { showConfigError(); return; }
+  if (!gisReady) { alert('Cargando Google... intenta en un segundo.'); return; }
+  tokenClient.requestAccessToken({ prompt: 'consent' });
+});
+
+function signOut() {
+  const token = gapi.client.getToken();
+  if (token) google.accounts.oauth2.revoke(token.access_token);
+  gapi.client.setToken('');
+  localStorage.removeItem('jcm_gtoken');
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+function showApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  document.getElementById('today-str').textContent = new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  // Store token
+  const tok = gapi.client.getToken();
+  if (tok) localStorage.setItem('jcm_gtoken', JSON.stringify(tok));
+}
+
+// ── DRIVE STORAGE ─────────────────────────────────────────────────────────────
+async function findOrCreateDataFile() {
+  // Search in appDataFolder
+  const res = await gapi.client.drive.files.list({
+    spaces: 'appDataFolder',
+    q: `name='${DATA_FILE}'`,
+    fields: 'files(id,name)',
+  });
+  if (res.result.files && res.result.files.length > 0) {
+    driveFileId = res.result.files[0].id;
+    return driveFileId;
+  }
+  // Create it
+  const create = await gapi.client.drive.files.create({
+    resource: { name: DATA_FILE, parents: ['appDataFolder'] },
+    fields: 'id',
+  });
+  driveFileId = create.result.id;
+  return driveFileId;
+}
+
+async function loadFromDrive() {
+  setSyncStatus('syncing');
+  try {
+    await findOrCreateDataFile();
+    const res = await gapi.client.drive.files.get({
+      fileId: driveFileId,
+      alt: 'media',
+    });
+    if (res.body && res.body.trim()) {
+      tasks = JSON.parse(res.body);
+    } else {
+      tasks = [];
+    }
+    setSyncStatus('ok');
+  } catch(e) {
+    console.error('Load error', e);
+    tasks = [];
+    setSyncStatus('error');
+  }
+  render();
+}
+
+async function saveToDrive() {
+  setSyncStatus('syncing');
+  try {
+    if (!driveFileId) await findOrCreateDataFile();
+    const token = gapi.client.getToken().access_token;
+    const blob = new Blob([JSON.stringify(tasks)], {type:'application/json'});
+    const meta = new Blob([JSON.stringify({name: DATA_FILE})], {type:'application/json'});
+    const form = new FormData();
+    form.append('metadata', meta);
+    form.append('file', blob);
+    await fetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=multipart`, {
+      method: 'PATCH',
+      headers: { Authorization: 'Bearer ' + token },
+      body: form,
+    });
+    setSyncStatus('ok');
+  } catch(e) {
+    console.error('Save error', e);
+    setSyncStatus('error');
+  }
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(saveToDrive, 800);
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────────
+function todayISO(){return new Date().toISOString().split('T')[0];}
+function fmtDate(iso){if(!iso)return'';const[y,m,d]=iso.split('-');return d+'/'+m+'/'+y;}
+function captureFmt(){return new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function setSyncStatus(s){
+  const dot=document.getElementById('sync-dot'),lbl=document.getElementById('sync-label');
+  if(!dot)return;
+  dot.className='dot'+(s==='syncing'?' syncing':s==='error'?' error':'');
+  lbl.textContent=s==='syncing'?'Guardando...':s==='error'?'Error al guardar':'Sincronizado';
+}
+
+function addTask(){
+  const inp=document.getElementById('task-input'),text=inp.value.trim();
+  if(!text){inp.focus();return;}
+  tasks.push({id:Date.now(),text,empresa:document.getElementById('emp-sel').value,prioridad:document.getElementById('prio-sel').value,done:false,fecha:captureFmt(),capturedAt:Date.now(),due:document.getElementById('due-input').value||null});
+  inp.value='';document.getElementById('due-input').value='';inp.focus();
+  scheduleSave();render();
+}
+document.getElementById('task-input').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
+
+function toggleDone(id){const t=tasks.find(x=>x.id===id);if(t){t.done=!t.done;scheduleSave();render();}}
+function deleteTask(id){if(!confirm('¿Eliminar esta tarea?'))return;tasks=tasks.filter(x=>x.id!==id);scheduleSave();render();}
+function setFilter(f,btn){filter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render();}
+function dueStatus(t){if(!t.due)return null;const td=todayISO();if(t.due<td)return'overdue';if(t.due===td)return'today';return'future';}
+function getFiltered(){return tasks.filter(t=>{if(filter==='Todas')return true;if(filter==='Pendientes')return!t.done;if(filter==='Completadas')return t.done;if(filter==='Alta')return t.prioridad==='Alta'&&!t.done;if(filter==='Vencidas')return!t.done&&t.due&&t.due<todayISO();return t.empresa===filter;});}
+function sortCapture(arr){return arr.slice().sort((a,b)=>(a.capturedAt||0)-(b.capturedAt||0));}
+
+function renderTodayBanner(){
+  const td=todayISO(),tt=tasks.filter(t=>!t.done&&t.due===td),c=document.getElementById('today-container');
+  if(!tt.length){c.innerHTML='<div class="today-empty">Sin tareas con vencimiento hoy</div>';return;}
+  c.innerHTML='<div class="today-list">'+tt.map(t=>'<div class="today-item"><div class="today-check'+(t.done?' checked':'')+'" onclick="toggleDone('+t.id+')">'+(t.done?'✓':'')+'</div><span class="today-item-text'+(t.done?' done-text':'')+'">'+t.text+'</span><span class="today-emp">'+t.empresa+'</span></div>').join('')+'</div>';
+}
+function dueBadgeHTML(t){const s=dueStatus(t);if(!s)return'';if(s==='overdue')return'<span class="due-badge due-overdue">Vencida '+fmtDate(t.due)+'</span>';if(s==='today')return'<span class="due-badge due-today">Vence hoy</span>';return'<span class="due-badge due-future">Vence '+fmtDate(t.due)+'</span>';}
+function taskHTML(t){const ec=t.empresa==='Juvenia'?'badge-juv':t.empresa==='MURO'?'badge-muro':'badge-personal',pc=t.prioridad==='Alta'?'prio-alta':t.prioridad==='Media'?'prio-media':'prio-baja',ov=!t.done&&t.due&&t.due<todayISO();return'<div class="task-item'+(t.done?' done':'')+(ov?' overdue':'')+'"><div class="task-check'+(t.done?' checked':'')+'" onclick="toggleDone('+t.id+')">'+(t.done?'✓':'')+'</div><div class="task-body"><div class="task-text'+(t.done?' done-text':'')+'">'+t.text+'</div><div class="task-meta"><span class="badge '+ec+'">'+t.empresa+'</span><span class="badge '+pc+'">'+t.prioridad+'</span>'+dueBadgeHTML(t)+'<span class="task-date">Cap. '+t.fecha+'</span></div></div><button class="del-btn" onclick="deleteTask('+t.id+')" title="Eliminar">&times;</button></div>';}
+
+function render(){
+  const pending=tasks.filter(t=>!t.done);
+  document.getElementById('s-pending').textContent=pending.length;
+  document.getElementById('s-juv').textContent=pending.filter(t=>t.empresa==='Juvenia').length;
+  document.getElementById('s-muro').textContent=pending.filter(t=>t.empresa==='MURO').length;
+  renderTodayBanner();
+  const filtered=getFiltered(),container=document.getElementById('tasks-container');
+  if(!filtered.length){container.innerHTML='<div class="empty">Sin tareas en esta vista</div>';return;}
+  const alta=sortCapture(filtered.filter(t=>t.prioridad==='Alta'&&!t.done)),media=sortCapture(filtered.filter(t=>t.prioridad==='Media'&&!t.done)),baja=sortCapture(filtered.filter(t=>t.prioridad==='Baja'&&!t.done)),done=sortCapture(filtered.filter(t=>t.done));
+  let html='<div class="tasks-list">';
+  if(alta.length)html+='<div class="section-label">Alta prioridad</div>'+alta.map(taskHTML).join('');
+  if(media.length)html+='<div class="section-label">Media prioridad</div>'+media.map(taskHTML).join('');
+  if(baja.length)html+='<div class="section-label">Baja prioridad</div>'+baja.map(taskHTML).join('');
+  if(done.length)html+='<div class="section-label">Completadas</div>'+done.map(taskHTML).join('');
+  html+='</div>';container.innerHTML=html;
+}
+
+function copyForClaude(){const pending=tasks.filter(t=>!t.done);if(!pending.length){alert('No tienes tareas pendientes.');return;}const list=pending.map(t=>'['+t.empresa+']['+t.prioridad+']'+(t.due?' [Vence:'+fmtDate(t.due)+']':'')+' '+t.text).join('\n');const text='Revisión diaria de pendientes. Estas son mis tareas activas:\n\n'+list+'\n\nAyúdame a priorizar qué atacar hoy y qué puedo postergar.';navigator.clipboard.writeText(text).then(()=>alert('Copiado. Pégalo en Claude.')).catch(()=>prompt('Copia esto:',text));}
+function copyAnalysis(){const all=tasks.map(t=>'['+t.empresa+']['+t.prioridad+']['+(t.done?'HECHO':'PENDIENTE')+']'+(t.due?' [Vence:'+fmtDate(t.due)+']':'')+' '+t.text).join('\n');const text='Analiza mis pendientes actuales y dime si hay algo que debería replantear, delegar o eliminar:\n\n'+all;navigator.clipboard.writeText(text).then(()=>alert('Copiado. Pégalo en Claude.')).catch(()=>prompt('Copia esto:',text));}
+</script>
+</body>
+</html>
